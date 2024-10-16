@@ -46,6 +46,27 @@ This project implements an AI-powered Twitch chatbot using the Phi-3.5-mini-inst
    MODEL_PATH=/path/to/your/Phi-3.5-mini-instruct-Q4_K_M.gguf
    ```
 
+## Downloading the Phi-3.5 Mini Model
+
+To use this chatbot, you need to download the Phi-3.5-mini-instruct-Q4_K_M.gguf model. Follow these steps:
+
+1. Install the Hugging Face CLI if you haven't already:
+   ```
+   pip install huggingface_hub
+   ```
+
+2. Login to Hugging Face (you may need to create an account if you don't have one):
+   ```
+   huggingface-cli login
+   ```
+
+3. Download the model:
+   ```
+   huggingface-cli download microsoft/Phi-3.5-mini-instruct-GGUF Phi-3.5-mini-instruct-Q4_K_M.gguf --local-dir . --local-dir-use-symlinks False
+   ```
+
+4. Once downloaded, update the `MODEL_PATH` in your `.env` file to point to the location of the downloaded .gguf file.
+
 ## Usage
 
 1. Start the bot:
