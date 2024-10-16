@@ -1,0 +1,7 @@
+.env/
+config.py
+.env
+Phi-3.5-mini-instruct-Q4_K_M.gguf
+venv/
+.cache
+__pycache__

@@ -1,0 +1,6 @@
+ai-twitch-bot/
+├── main.py
+├── llm_handler.py
+├── twitch_bot.py
+├── config.py
+└── requirements.txt

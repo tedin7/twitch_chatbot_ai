@@ -1,0 +1,7 @@
+twitchio
+llama-cpp-python
+fastapi
+uvicorn
+python-dotenv
+aiohttp
+pydantic
