@@ -12,8 +12,8 @@ class LLMHandler:
         
         self.llm = Llama(
             model_path=self.model_path,
-            n_ctx=1024,  # Reduced context size to save memory
-            n_threads=1,  # Set to 1 for lower resource usage
+            n_ctx=512,  # Further reduced context size
+            n_threads=16,  # Reduced to 1 thread
             n_gpu_layers=0,  # CPU-only inference
             low_vram=True,
             seed=42
@@ -21,12 +21,22 @@ class LLMHandler:
         self.logger.info("Model loaded successfully")
 
         self.conversation_history = defaultdict(list)
-        self.max_history = 5  # Reduced to 5 to save memory
+        self.max_history = 3  # Further reduced to 3
+        self.max_history_age = 3600  # 1 hour in seconds
 
     def format_messages(self, messages: List[Dict[str, str]]) -> str:
         return "".join(f"<|{m['role']}|> {m['content']}<|end|>" for m in messages) + "<|assistant|>"
 
-    def generate_response(self, prompt: str, user: str, max_tokens: int = 150) -> str:
+    def prune_conversation_history(self):
+        current_time = time.time()
+        for user, history in self.conversation_history.items():
+            self.conversation_history[user] = [
+                msg for msg in history[-self.max_history*2:]
+                if current_time - msg.get('timestamp', 0) < self.max_history_age
+            ]
+
+    def generate_response(self, prompt: str, user: str, max_tokens: int = 100):
+        self.prune_conversation_history()
         history = self.conversation_history[user]
         messages = [
             {"role": "system", "content": "You are a helpful AI assistant. Provide concise responses."},
@@ -49,7 +59,8 @@ class LLMHandler:
             )
             response = output['choices'][0]['text'].strip()
 
-            history.extend([{"role": "user", "content": prompt}, {"role": "assistant", "content": response}])
+            history.append({"role": "user", "content": prompt, "timestamp": time.time()})
+            history.append({"role": "assistant", "content": response, "timestamp": time.time()})
             self.conversation_history[user] = history[-self.max_history*2:]
 
             return response
