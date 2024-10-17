@@ -29,8 +29,9 @@ class Bot(commands.Bot):
             await self.handle_commands(message)
         elif self.is_reply_to_bot(message):
             await self.handle_conversation(message, is_reply=True)
-        elif not message.content.startswith('@'):
-            await self.handle_conversation(message)
+        # Remove the following line to prevent responding to all messages
+        # elif not message.content.startswith('@'):
+        #     await self.handle_conversation(message)
 
     def is_reply_to_bot(self, message):
         # Check if the message is a reply to the bot's last response
@@ -43,15 +44,18 @@ class Bot(commands.Bot):
         if is_reply:
             # Remove the @bot_name from the beginning of the message
             content = re.sub(f"^@{self.bot_nick}\s*", "", content, flags=re.IGNORECASE)
+            
+            # If it's a reply and we have a last response, use it as context
+            if user in self.last_response:
+                context = self.last_response[user]
+                prompt = f"Previous response: {context}\nUser: {content}"
+            else:
+                prompt = content
 
-        # If it's a reply and we have a last response, use it as context
-        if is_reply and user in self.last_response:
-            context = self.last_response[user]
-            prompt = f"Previous response: {context}\nUser: {content}"
+            await self.request_queue.put((prompt, message, user))
         else:
-            prompt = content
-
-        await self.request_queue.put((prompt, message, user))
+            # This else block will only be reached for !ai commands now
+            await self.request_queue.put((content, message, user))
 
     async def process_requests(self):
         async with aiohttp.ClientSession() as session:
@@ -97,9 +101,15 @@ class Bot(commands.Bot):
         if not prompt:
             await ctx.send("Please provide a prompt after the !ai command.")
             return
-        await self.request_queue.put((prompt, ctx, ctx.author.name))
+        await self.handle_conversation(ctx.message)
 
     @commands.command(name='aiinfo')
     async def aiinfo_command(self, ctx):
         model_info = self.llm_handler.get_model_info()
         await ctx.send(f"AI Model: {model_info['model_name']} | Device: {model_info['device']} | Parameters: {model_info['model_parameters']}")
+
+    async def join_channel(self, channel_name):
+        if channel_name not in self.initial_channels:
+            await self.join_channels([channel_name])
+            self.initial_channels.append(channel_name)
+            self.logger.info(f"Joined channel: {channel_name}")

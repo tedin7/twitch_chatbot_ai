@@ -99,3 +99,16 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
+
+## Connecting to Multiple Channels
+
+This bot now supports easy connection to multiple Twitch channels using a web interface. To use this feature:
+
+1. Set up a Twitch Developer Application and note down the Client ID and Client Secret
+2. Add the Client ID and Client Secret to your `.env` file
+3. Run the bot using `python run.py`
+4. Open a web browser and go to `http://localhost:5000`
+5. Click on "Connect to Twitch" and authorize the application
+6. The bot will automatically join your channel
+
+Note: Make sure you have the necessary OAuth tokens and permissions to join the channels you add.

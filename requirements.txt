@@ -6,3 +6,6 @@ python-dotenv
 aiohttp
 pydantic
 slowapi
+flask
+requests
+
